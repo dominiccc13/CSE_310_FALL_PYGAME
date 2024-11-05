@@ -82,7 +82,7 @@ while True:
         screen.blit(back_wall, (i * back_wall_width + scroll, 0))
 
     # Background Scroll Speed
-    scroll -= 1
+    scroll -= 0
 
     # Player input handling
     keys = pygame.key.get_pressed()
@@ -137,7 +137,6 @@ while True:
 
     # Drawing
     
-    # screen.blit(back_wall, (0, 0))
     screen.blit(player.image, player.rect)  # Draw player on the screen
     screen.blit(enemy.image, enemy.rect)  # Draw enemy on the screen
     platforms.draw(screen)
