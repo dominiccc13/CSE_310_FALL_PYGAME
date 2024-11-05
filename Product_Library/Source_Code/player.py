@@ -6,3 +6,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load(player_image).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.topleft = (0, 0)  # Temporary position; the main file will set the actual starting position
+
+    def update(self):
+        # This method can be extended for animations or other player logic
+        pass

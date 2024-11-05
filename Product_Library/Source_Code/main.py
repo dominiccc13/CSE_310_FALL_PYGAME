@@ -13,38 +13,84 @@ except pygame.error as e:
     sys.exit(1)
 
 # Constants
-BACKGROUND = (53, 81, 92)
+BACKGROUND_IMAGES = [
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_1.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_2.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_3.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_4.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_5.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_6.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_7.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_8.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_9.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_10.png'
+]
 PLAYER_IMAGE = 'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/player.png'
 SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 600
 
 # Player movement settings
-move_speed = 4          # Speed for left/right movement
-jump_height = 17        # Initial upward jump velocity
-gravity = 0.5           # Gravity for a smoother fall
-velocity_y = 0          # Vertical velocity
-is_jumping = False       # Jumping state
+move_speed = 4
+jump_height = 20
+gravity = 0.5
+velocity_y = 0
+is_jumping = False
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-# Define a more complex map layout
-platforms = pygame.sprite.Group()
-map_layout = [
-    (0, 580, 1000, 20),    # Ground platform
-    (150, 450, 150, 20),   # Platform 1
-    (400, 380, 200, 20),   # Platform 2
-    (700, 300, 180, 20),   # Platform 3
-    (500, 200, 100, 20),   # Platform 4 (higher)
-    (850, 150, 100, 20),   # Platform 5
-    (200, 100, 150, 20),   # Platform 6
-]
+# Function to load a random background image
+def load_random_background():
+    background_image_path = random.choice(BACKGROUND_IMAGES)
+    try:
+        background_image = pygame.image.load(background_image_path)
+        return pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    except pygame.error as e:
+        print(f"Error loading background image: {e}")
+        sys.exit(1)
 
-for x, y, width, height in map_layout:
-    platforms.add(Tile(x, y, width, height))
+# Function to generate platforms
+def generate_platforms(num_platforms, exit_rect):
+    platforms = pygame.sprite.Group()
+    for _ in range(num_platforms):
+        while True:
+            width = random.randint(80, 200)
+            height = 20
+            x = random.randint(0, SCREEN_WIDTH - width)
+            y = random.randint(50, SCREEN_HEIGHT - height - 50)
 
-# Load player and set starting position randomly on top of one of the platforms
+            # Create a new platform
+            new_platform = Tile(x, y, width, height)
+            if not new_platform.rect.colliderect(exit_rect):  # Ensure it doesn't overlap with exit
+                platforms.add(new_platform)
+                break
+    return platforms
+
+# Function to generate exit rectangle
+def generate_exit(platforms):
+    while True:
+        exit_width = 50
+        exit_height = 50
+        x = random.randint(0, SCREEN_WIDTH - exit_width)
+        y = random.randint(50, SCREEN_HEIGHT - exit_height - 50)
+
+        exit_rect = pygame.Rect(x, y, exit_width, exit_height)
+
+        # Check if the exit is on a platform
+        if any(platform.rect.colliderect(exit_rect) for platform in platforms):
+            return exit_rect
+
+# Load initial background image
+background_image = load_random_background()
+
+# Generate platforms and exit
+num_platforms = random.randint(6, 9)
+platforms = generate_platforms(num_platforms, pygame.Rect(0, 0, 50, 50))  # Dummy exit rect for initial generation
+exit_rect = generate_exit(platforms)
+
+# Load player and set starting position randomly on a platform
 player = Player(PLAYER_IMAGE)
-random_platform = random.choice(map_layout)
-player.rect.midbottom = (random_platform[0] + random_platform[2] // 2, random_platform[1])
+platforms_list = list(platforms)
+random_platform = random.choice(platforms_list)
+player.rect.midbottom = (random_platform.rect.centerx, random_platform.rect.top)
 
 # Frame rate control
 clock = pygame.time.Clock()
@@ -61,10 +107,9 @@ while True:
         player.rect.x += move_speed
 
     # Jump initiation
-    if keys[pygame.K_SPACE]:
-        if not is_jumping:  # Start jumping only if not already jumping
-            is_jumping = True
-            velocity_y = -jump_height
+    if keys[pygame.K_SPACE] and not is_jumping:
+        is_jumping = True
+        velocity_y = -jump_height
 
     # Apply gravity or jumping
     player.rect.y += velocity_y
@@ -85,15 +130,29 @@ while True:
     if not on_platform and player.rect.bottom < SCREEN_HEIGHT:
         velocity_y += gravity
 
+    # Check for level exit
+    if player.rect.colliderect(exit_rect):
+        # Load new level
+        background_image = load_random_background()
+        platforms = generate_platforms(num_platforms, exit_rect)  # Regenerate platforms
+        exit_rect = generate_exit(platforms)  # Generate new exit
+        
+        # Convert platforms group to a list and respawn player on a new platform
+        platforms_list = list(platforms)
+        random_platform = random.choice(platforms_list) if platforms_list else None  # Check if there are platforms
+        if random_platform:
+            player.rect.midbottom = (random_platform.rect.centerx, random_platform.rect.top)
+
     # Exit condition
     if keys[pygame.K_ESCAPE]:
         break
 
     # Drawing
-    screen.fill(BACKGROUND)
-    screen.blit(player.image, player.rect)
-    platforms.draw(screen)
-    pygame.display.flip()
+    screen.blit(background_image, (0, 0))  # Draw the background image
+    platforms.draw(screen)                  # Draw platforms on top of the background
+    pygame.draw.rect(screen, (255, 0, 0), exit_rect)  # Draw exit rectangle
+    screen.blit(player.image, player.rect)  # Draw the player
+    pygame.display.flip()                   # Update the display
 
     # Frame rate control
     clock.tick(60)  # Limit to 60 frames per second

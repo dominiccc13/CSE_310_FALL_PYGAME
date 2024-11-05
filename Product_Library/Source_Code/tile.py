@@ -1,4 +1,3 @@
-# tile.py
 import pygame
 
 class Tile(pygame.sprite.Sprite):
@@ -7,3 +6,7 @@ class Tile(pygame.sprite.Sprite):
         self.image = pygame.Surface((width, height))
         self.image.fill((34, 177, 76))  # Green color for the platforms
         self.rect = self.image.get_rect(topleft=(x, y))
+
+    def update(self):
+        # Update method can be added for future logic if needed
+        pass
