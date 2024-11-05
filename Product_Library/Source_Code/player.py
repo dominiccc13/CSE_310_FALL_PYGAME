@@ -2,6 +2,7 @@ import pygame
 from random import Random
 
 class Player(pygame.sprite.Sprite):
+class Player(pygame.sprite.Sprite):
     def __init__(self, player_image):
         super().__init__()
         self.image = pygame.image.load(player_image)
