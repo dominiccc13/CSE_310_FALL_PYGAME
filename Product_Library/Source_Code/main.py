@@ -84,13 +84,8 @@ def generate_platforms(num_platforms, exit_rect):
                 )
 
             # Create a new platform
-<<<<<<< HEAD
             new_platform = Platform(x, y, width, height)
             if not new_platform.rect.colliderect(exit_rect):  # Ensure it doesn't overlap with exit
-=======
-            new_platform = Tile(x, y, width, height)
-            if not new_platform.rect.colliderect(exit_rect):  # Ensure it doesn't overlap with the exit
->>>>>>> Levels
                 platforms.add(new_platform)
                 break
 
