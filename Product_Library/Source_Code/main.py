@@ -50,18 +50,38 @@ def load_random_background():
 # Function to generate platforms
 def generate_platforms(num_platforms, exit_rect):
     platforms = pygame.sprite.Group()
+    min_gap_x = 200  # Minimum horizontal gap between platforms
+    max_gap_x = 300  # Maximum horizontal gap between platforms
+    min_gap_y = 200   # Minimum vertical gap between platforms
+    max_gap_y = 400  # Maximum vertical gap between platforms
+
     for _ in range(num_platforms):
         while True:
             width = random.randint(80, 200)
             height = 20
-            x = random.randint(0, SCREEN_WIDTH - width)
-            y = random.randint(50, SCREEN_HEIGHT - height - 50)
+            
+            if len(platforms) == 0:
+                # Position the first platform near the bottom of the screen
+                x = random.randint(0, SCREEN_WIDTH - width)
+                y = random.randint(SCREEN_HEIGHT - 100, SCREEN_HEIGHT - 50)
+            else:
+                # Position subsequent platforms based on previous platform
+                prev_platform = random.choice(platforms.sprites())
+                x = random.randint(
+                    max(0, prev_platform.rect.x - max_gap_x),
+                    min(SCREEN_WIDTH - width, prev_platform.rect.x + max_gap_x)
+                )
+                y = random.randint(
+                    max(50, prev_platform.rect.y - max_gap_y),
+                    min(SCREEN_HEIGHT - height - 50, prev_platform.rect.y + max_gap_y)
+                )
 
             # Create a new platform
             new_platform = Tile(x, y, width, height)
-            if not new_platform.rect.colliderect(exit_rect):  # Ensure it doesn't overlap with exit
+            if not new_platform.rect.colliderect(exit_rect):  # Ensure it doesn't overlap with the exit
                 platforms.add(new_platform)
                 break
+
     return platforms
 
 # Function to generate exit rectangle
