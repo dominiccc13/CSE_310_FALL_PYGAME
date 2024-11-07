@@ -3,9 +3,13 @@ import sys
 import random
 import math
 from player import Player
-from flying_enemy import Flying_Enemy
+from enemy import Flying_Enemy
 from tile import Tile
-from tile import Tile
+
+from db import create_save
+from db import load_player_save
+from db import load_enemies_save
+from db import load_platforms_save
 
 pygame.init()
 
@@ -28,13 +32,13 @@ BACKGROUND_IMAGES = [
     'Product_Library/Source_Code/art/background_9.png',
     'Product_Library/Source_Code/art/background_10.png'
 ]
-PLAYER_IMAGE = 'Product_Library/Source_Code/art/player.png'
+# PLAYER_IMAGE = 'Product_Library/Source_Code/art/player.png'
 SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 600
 
 # Player movement settings
 move_speed = 4
-jump_height = 20
-gravity = 0.5
+jump_height = 25
+gravity = 1
 velocity_y = 0
 is_jumping = False
 
@@ -90,7 +94,7 @@ platforms = generate_platforms(num_platforms, pygame.Rect(0, 0, 50, 50))  # Dumm
 exit_rect = generate_exit(platforms)
 
 # Load player and set starting position randomly on a platform
-player = Player(PLAYER_IMAGE)
+player = Player(10)
 platforms_list = list(platforms)
 random_platform = random.choice(platforms_list)
 player.rect.midbottom = (random_platform.rect.centerx, random_platform.rect.top)
@@ -106,11 +110,11 @@ while True:
     clock.tick(60)  # Limit to 60 frames per second
 
     # Draw Scrolling Backround
-    for i in range(wall_tiles):
-        screen.blit(back_wall, (i * back_wall_width + scroll, 0))
+    # for i in range(wall_tiles):
+    #     screen.blit(back_wall, (i * back_wall_width + scroll, 0))
 
     # Background Scroll Speed
-    scroll -= 0
+    # scroll -= 0
 
     # Player input handling
     keys = pygame.key.get_pressed()
@@ -120,12 +124,12 @@ while True:
     # Horizontal movement
     if keys[pygame.K_a] and player.rect.left > 0:
         player.flip_False()
-        player.rect.x -= 3
+        player.rect.x -= 8
     
         # Move Right
     if keys[pygame.K_d] and player.rect.right < 1000:
         player.flip_True()
-        player.rect.x += 3
+        player.rect.x += 8
 
         # Jump
     if keys[pygame.K_SPACE] and not is_jumping:
@@ -163,6 +167,18 @@ while True:
         random_platform = random.choice(platforms_list) if platforms_list else None  # Check if there are platforms
         if random_platform:
             player.rect.midbottom = (random_platform.rect.centerx, random_platform.rect.top)
+
+        # Check if the player has fallen past the bottom of the screen
+    if player.rect.top >= SCREEN_HEIGHT:
+        # Convert platforms group to a list and respawn player on a new platform
+        platforms_list = list(platforms)
+        random_platform = random.choice(platforms_list) if platforms_list else None  # Check if there are platforms
+        if random_platform:
+            # Respawn the player on the selected platform
+            player.rect.midbottom = (random_platform.rect.centerx, random_platform.rect.top)
+            # Reset vertical velocity to prevent immediate falling
+            velocity_y = 0
+            is_jumping = False
 
     # Exit condition
     if keys[pygame.K_ESCAPE]:

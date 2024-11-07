@@ -2,12 +2,13 @@ import pygame
 from random import Random
 
 class Player(pygame.sprite.Sprite):
-class Player(pygame.sprite.Sprite):
-    def __init__(self, player_image):
+    def __init__(self, health: int):
         super().__init__()
-        self.image = pygame.image.load(player_image)
+        self.image = pygame.image.load("Product_Library/Source_Code/art/player_frame1_True.png")
         self.rect = self.image.get_rect()
         self.rect.topleft = (500, 500)
+        self.health = health
+        self.level = int
         self.direction = True
         self.animation_True = [
             # Sprite frames facing right.
