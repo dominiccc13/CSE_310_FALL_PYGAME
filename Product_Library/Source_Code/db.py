@@ -1,9 +1,9 @@
 import sqlite3
 import pygame
 from player import Player
-from Product_Library.Source_Code.enemy import Enemy
+from enemy import Enemy
 from platform import Platform
-
+ 
 CONNECTION = sqlite3.connect('save_file.db')
 
 CURSOR = CONNECTION.cursor()

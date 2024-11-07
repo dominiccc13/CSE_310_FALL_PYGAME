@@ -3,13 +3,13 @@ import sys
 import random
 import math
 from player import Player
-from enemy import Flying_Enemy
-from tile import Tile
+from enemy import Enemy
+from platform import Platform
 
-from db import create_save
-from db import load_player_save
-from db import load_enemies_save
-from db import load_platforms_save
+# from db import create_save
+# from db import load_player_save
+# from db import load_enemies_save
+# from db import load_platforms_save
 
 pygame.init()
 
@@ -65,7 +65,7 @@ def generate_platforms(num_platforms, exit_rect):
             y = random.randint(50, SCREEN_HEIGHT - height - 50)
 
             # Create a new platform
-            new_platform = Tile(x, y, width, height)
+            new_platform = Platform(x, y, width, height)
             if not new_platform.rect.colliderect(exit_rect):  # Ensure it doesn't overlap with exit
                 platforms.add(new_platform)
                 break
@@ -109,19 +109,10 @@ while True:
     # Frame rate control
     clock.tick(60)  # Limit to 60 frames per second
 
-    # Draw Scrolling Backround
-    # for i in range(wall_tiles):
-    #     screen.blit(back_wall, (i * back_wall_width + scroll, 0))
-
-    # Background Scroll Speed
-    # scroll -= 0
-
     # Player input handling
     keys = pygame.key.get_pressed()
-    
-        # Move Left
-    
-    # Horizontal movement
+        
+    # Move Left
     if keys[pygame.K_a] and player.rect.left > 0:
         player.flip_False()
         player.rect.x -= 8
