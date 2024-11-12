@@ -24,7 +24,6 @@ NORMAL_BACKGROUND_IMAGES = [
     'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_8.png',
     'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_9.png',
     'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_10.png'
-    # add all normal background images
 ]
 DUNGEON_BACKGROUND_IMAGES = [
     'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/dungeon_background_1.png',
@@ -32,8 +31,6 @@ DUNGEON_BACKGROUND_IMAGES = [
     'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/dungeon_background_3.png',
     'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/dungeon_background_4.png',
     'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/dungeon_background_5.png'
-    
-    # add dungeon-specific images
 ]
 
 PLAYER_IMAGE = 'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/player.png'
@@ -42,9 +39,12 @@ SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 600
 # Player movement settings
 move_speed = 4
 jump_height = 20
+half_jump_height = 10
 gravity = 0.5
 velocity_y = 0
 is_jumping = False
+jump_count = 0
+can_double_jump = False
 
 # Level settings
 level_count = 1
@@ -78,14 +78,13 @@ def generate_platforms(num_platforms, exit_rect):
     platforms = pygame.sprite.Group()
     for _ in range(num_platforms):
         attempt = 0
-        while attempt < 10:  # Retry limit to avoid infinite loops
+        while attempt < 10:
             width = random.randint(80, 200)
             height = 20
             x = random.randint(0, SCREEN_WIDTH - width)
             y = random.randint(50, SCREEN_HEIGHT - height - 50)
             new_platform = Tile(x, y, width, height)
 
-            # Check for overlap with existing platforms or exit
             if not any(platform.rect.colliderect(new_platform.rect) for platform in platforms) and \
                not new_platform.rect.colliderect(exit_rect):
                 platforms.add(new_platform)
@@ -93,15 +92,13 @@ def generate_platforms(num_platforms, exit_rect):
             attempt += 1
     return platforms
 
-# Function to generate exit rectangle
+# Function to generate exit rectangle on top of a platform
 def generate_exit(platforms):
-    while True:
-        exit_width, exit_height = 50, 50
-        x = random.randint(0, SCREEN_WIDTH - exit_width)
-        y = random.randint(50, SCREEN_HEIGHT - exit_height - 50)
-        exit_rect = pygame.Rect(x, y, exit_width, exit_height)
-        if any(platform.rect.colliderect(exit_rect) for platform in platforms):
-            return exit_rect
+    selected_platform = random.choice(list(platforms))
+    exit_width, exit_height = 50, 50
+    x = selected_platform.rect.centerx - exit_width // 2
+    y = selected_platform.rect.top - exit_height
+    return pygame.Rect(x, y, exit_width, exit_height)
 
 # Function to display level transition with fade effect
 def level_transition(level):
@@ -119,13 +116,15 @@ def level_transition(level):
 
 # Initial background, platforms, and exit generation
 background_image = load_random_background()
-num_platforms = random.randint(6, 9)
-platforms = generate_platforms(num_platforms, pygame.Rect(0, 0, 50, 50))  # Dummy exit rect for initial generation
+num_platforms = random.randint(10, 15)
+platforms = generate_platforms(num_platforms, pygame.Rect(0, 0, 50, 50))
 exit_rect = generate_exit(platforms)
 
-# Initial player position on a random platform
+# Initial player position on a random platform that is not the same as the exit platform
 platforms_list = list(platforms)
-random_platform = random.choice(platforms_list)
+exit_platform = next((platform for platform in platforms if platform.rect.colliderect(exit_rect)), None)
+available_platforms = [platform for platform in platforms_list if platform != exit_platform]
+random_platform = random.choice(available_platforms) if available_platforms else random.choice(platforms_list)
 player.rect.midbottom = (random_platform.rect.centerx, random_platform.rect.top)
 
 # Game loop
@@ -139,12 +138,22 @@ while True:
     if keys[pygame.K_d] and player.rect.right < SCREEN_WIDTH:
         player.rect.x += move_speed
 
-    if keys[pygame.K_SPACE] and not is_jumping:
-        is_jumping = True
-        velocity_y = -jump_height
+    # Jumping logic
+    if keys[pygame.K_SPACE]:
+        if not is_jumping:
+            velocity_y = -jump_height
+            is_jumping = True
+            can_double_jump = True
+        elif can_double_jump:
+            velocity_y = -half_jump_height
+            can_double_jump = False
 
+    # Apply gravity
     player.rect.y += velocity_y
-    velocity_y += gravity if is_jumping else 0
+    if velocity_y < 0:
+        is_jumping = True
+    elif velocity_y > 0:
+        is_jumping = False
 
     # Collision detection
     on_platform = False
@@ -154,7 +163,7 @@ while True:
                 player.rect.bottom = platform.rect.top
                 velocity_y = 0
                 is_jumping = False
-                on_platform = True
+                can_double_jump = False
                 break
 
     if not on_platform and player.rect.bottom < SCREEN_HEIGHT:
@@ -170,7 +179,9 @@ while True:
         background_image = load_random_background(is_dungeon)
         platforms = generate_platforms(num_platforms, exit_rect)
         exit_rect = generate_exit(platforms)
-        random_platform = random.choice(list(platforms))
+        exit_platform = next((platform for platform in platforms if platform.rect.colliderect(exit_rect)), None)
+        available_platforms = [platform for platform in platforms if platform != exit_platform]
+        random_platform = random.choice(available_platforms) if available_platforms else random.choice(list(platforms))
         player.rect.midbottom = (random_platform.rect.centerx, random_platform.rect.top)
 
     # Exit on escape
