@@ -106,7 +106,7 @@ def generate_exit(platforms):
     exit_width, exit_height = 50, 50
     x = selected_platform.rect.centerx - exit_width // 2
     y = selected_platform.rect.top - exit_height
-    return pygame.Rect(x, y, exit_width, exit_height)
+    return Gate(x, y)
 
 # Function to display level transition with fade effect
 def level_transition(level):
