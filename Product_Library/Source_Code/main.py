@@ -2,7 +2,7 @@ import pygame
 import sys
 import random
 from player import Player
-from tile import Tile
+from platform import Platform
 
 pygame.init()
 
@@ -14,26 +14,26 @@ except pygame.error as e:
 
 # Constants
 NORMAL_BACKGROUND_IMAGES = [
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_1.png',
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_2.png',
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_3.png',
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_4.png',
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_5.png',
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_6.png',
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_7.png',
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_8.png',
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_9.png',
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_10.png'
+    'Product_Library/Source_Code/art/background_1.png',
+    'Product_Library/Source_Code/art/background_2.png',
+    'Product_Library/Source_Code/art/background_3.png',
+    'Product_Library/Source_Code/art/background_4.png',
+    'Product_Library/Source_Code/art/background_5.png',
+    'Product_Library/Source_Code/art/background_6.png',
+    'Product_Library/Source_Code/art/background_7.png',
+    'Product_Library/Source_Code/art/background_8.png',
+    'Product_Library/Source_Code/art/background_9.png',
+    'Product_Library/Source_Code/art/background_10.png'
 ]
 DUNGEON_BACKGROUND_IMAGES = [
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/dungeon_background_1.png',
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/dungeon_background_2.png',
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/dungeon_background_3.png',
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/dungeon_background_4.png',
-    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/dungeon_background_5.png'
+    'Product_Library/Source_Code/art/dungeon_background_1.png',
+    'Product_Library/Source_Code/art/dungeon_background_2.png',
+    'Product_Library/Source_Code/art/dungeon_background_3.png',
+    'Product_Library/Source_Code/art/dungeon_background_4.png',
+    'Product_Library/Source_Code/art/dungeon_background_5.png'
 ]
 
-PLAYER_IMAGE = 'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/player.png'
+PLAYER_IMAGE = 'Product_Library/Source_Code/art/player.png'
 SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 600
 
 # Player movement settings
