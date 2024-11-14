@@ -2,7 +2,7 @@ import pygame
 import sys
 import random
 from player import Player
-from tile import Tile
+from platform import Platform
 
 pygame.init()
 
@@ -83,7 +83,7 @@ def generate_platforms(num_platforms, exit_rect):
             height = 20
             x = random.randint(0, SCREEN_WIDTH - width)
             y = random.randint(50, SCREEN_HEIGHT - height - 50)
-            new_platform = Tile(x, y, width, height)
+            new_platform = Platform(x, y, width, height)
 
             if not any(platform.rect.colliderect(new_platform.rect) for platform in platforms) and \
                not new_platform.rect.colliderect(exit_rect):
