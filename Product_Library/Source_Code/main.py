@@ -5,6 +5,7 @@ import math
 from player import Player
 from enemy import Enemy
 from platform import Platform
+from gate import Gate
 
 # from db import create_save
 # from db import load_player_save
@@ -99,7 +100,7 @@ def generate_exit(platforms):
         x = random.randint(0, SCREEN_WIDTH - exit_width)
         y = random.randint(50, SCREEN_HEIGHT - exit_height - 50)
 
-        exit_rect = pygame.Rect(x, y, exit_width, exit_height)
+        exit_rect = Gate(x, y)
 
         # Check if the exit is on a platform
         if any(platform.rect.colliderect(exit_rect) for platform in platforms):
@@ -197,7 +198,7 @@ while True:
 
     screen.blit(background_image, (0,0))
     platforms.draw(screen)
-    pygame.draw.rect(screen, (255, 0, 0), exit_rect)  # Draw exit rectangle
+    screen.blit(exit_rect.image, exit_rect.rect)  # Draw exit rectangle
     screen.blit(player.image, player.rect)  # Draw player on the screen
     pygame.display.flip()  # Update the display
 
