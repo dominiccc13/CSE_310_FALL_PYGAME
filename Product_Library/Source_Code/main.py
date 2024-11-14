@@ -73,21 +73,43 @@ def load_random_background(is_dungeon=False):
         print(f"Error loading background image: {e}")
         sys.exit(1)
 
-# Function to generate platforms with no overlap
+# Constants for minimum and maximum gaps between platforms
+MIN_GAP_X = 100  # minimum gap in the x direction
+MAX_GAP_X = 400  # maximum gap in the x direction
+MIN_GAP_Y = 80   # minimum gap in the y direction
+MAX_GAP_Y = 300  # maximum gap in the y direction
+
+# Modified generate_platforms function to ensure gaps between platforms
 def generate_platforms(num_platforms, exit_rect):
     platforms = pygame.sprite.Group()
+    last_platform_rect = None
+
     for _ in range(num_platforms):
         attempt = 0
         while attempt < 10:
             width = random.randint(80, 200)
             height = 20
-            x = random.randint(0, SCREEN_WIDTH - width)
-            y = random.randint(50, SCREEN_HEIGHT - height - 50)
+            if last_platform_rect:
+                # Set x and y based on the last platform to maintain gaps
+                x = last_platform_rect.right + random.randint(MIN_GAP_X, MAX_GAP_X)
+                y = last_platform_rect.top + random.randint(-MAX_GAP_Y, MAX_GAP_Y)
+                # Ensure new platform doesn't go off-screen
+                if x + width > SCREEN_WIDTH:
+                    x = random.randint(0, SCREEN_WIDTH - width)
+                if y < 50 or y > SCREEN_HEIGHT - height - 50:
+                    y = random.randint(50, SCREEN_HEIGHT - height - 50)
+            else:
+                # Position first platform randomly within screen bounds
+                x = random.randint(0, SCREEN_WIDTH - width)
+                y = random.randint(50, SCREEN_HEIGHT - height - 50)
+
             new_platform = Tile(x, y, width, height)
 
+            # Ensure no overlap with existing platforms and no collision with exit
             if not any(platform.rect.colliderect(new_platform.rect) for platform in platforms) and \
                not new_platform.rect.colliderect(exit_rect):
                 platforms.add(new_platform)
+                last_platform_rect = new_platform.rect  # Update last platform position
                 break
             attempt += 1
     return platforms
@@ -116,7 +138,7 @@ def level_transition(level):
 
 # Initial background, platforms, and exit generation
 background_image = load_random_background()
-num_platforms = random.randint(10, 15)
+num_platforms = random.randint(10, 12)
 platforms = generate_platforms(num_platforms, pygame.Rect(0, 0, 50, 50))
 exit_rect = generate_exit(platforms)
 
@@ -193,7 +215,9 @@ while True:
     platforms.draw(screen)
     pygame.draw.rect(screen, (255, 0, 0), exit_rect)
     screen.blit(player.image, player.rect)
+
     pygame.display.flip()
     clock.tick(60)
 
 pygame.quit()
+sys.exit()
