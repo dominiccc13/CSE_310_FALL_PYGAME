@@ -82,3 +82,21 @@ def load_platforms_save() -> list[Platform]:
         platforms.append(new_platform)
 
     return platforms
+
+def delete_save():
+    """Deletes the tables of a save file."""
+    try:
+        # Drop the player table
+        CURSOR.execute("DROP TABLE IF EXISTS player")
+
+        # Drop the enemies table
+        CURSOR.execute("DROP TABLE IF EXISTS enemies")
+
+        # Drop the platforms table
+        CURSOR.execute("DROP TABLE IF EXISTS platforms")
+
+        # Commit the changes
+        CONNECTION.commit()
+        print("Save file deleted successfully.")
+    except sqlite3.Error as e:
+        print(f"An error occurred while deleting the save file: {e}")
