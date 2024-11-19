@@ -3,6 +3,11 @@ import sys
 import random
 from player import Player
 from platform import Platform
+from score import Score
+from boss import Boss
+from enemy import Enemy
+from collectable import Collectable
+from backgroundmusic import BackgroundMusic
 
 pygame.init()
 
@@ -14,26 +19,26 @@ except pygame.error as e:
 
 # Constants
 NORMAL_BACKGROUND_IMAGES = [
-    'Product_Library/Source_Code/art/background_1.png',
-    'Product_Library/Source_Code/art/background_2.png',
-    'Product_Library/Source_Code/art/background_3.png',
-    'Product_Library/Source_Code/art/background_4.png',
-    'Product_Library/Source_Code/art/background_5.png',
-    'Product_Library/Source_Code/art/background_6.png',
-    'Product_Library/Source_Code/art/background_7.png',
-    'Product_Library/Source_Code/art/background_8.png',
-    'Product_Library/Source_Code/art/background_9.png',
-    'Product_Library/Source_Code/art/background_10.png'
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_1.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_2.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_3.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_4.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_5.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_6.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_7.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_8.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_9.png',
+    'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/background_10.png'
 ]
 DUNGEON_BACKGROUND_IMAGES = [
-    'Product_Library/Source_Code/art/dungeon_background_1.png',
-    'Product_Library/Source_Code/art/dungeon_background_2.png',
-    'Product_Library/Source_Code/art/dungeon_background_3.png',
-    'Product_Library/Source_Code/art/dungeon_background_4.png',
-    'Product_Library/Source_Code/art/dungeon_background_5.png'
+    'CSE_310_FALL_PYGAME\Product_Library\Source_Code/art/dungeon_background_1.png',
+    'CSE_310_FALL_PYGAME\Product_Library\Source_Code/art/dungeon_background_2.png',
+    'CSE_310_FALL_PYGAME\Product_Library\Source_Code/art/dungeon_background_3.png',
+    'CSE_310_FALL_PYGAME\Product_Library\Source_Code/art/dungeon_background_4.png',
+    'CSE_310_FALL_PYGAME\Product_Library\Source_Code/art/dungeon_background_5.png'
 ]
 
-PLAYER_IMAGE = 'Product_Library/Source_Code/art/player.png'
+PLAYER_IMAGE = 'CSE_310_FALL_PYGAME/Product_Library/Source_Code/art/player.png'
 SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 600
 
 # Player movement settings
@@ -47,15 +52,26 @@ jump_count = 0
 can_double_jump = False
 
 # Level settings
-level_count = 1
+level_count = 0
 used_backgrounds = []
 
 # Screen setup
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 
+# Background music
+music = BackgroundMusic()
+music.play_music()
+
 # Load player
 player = Player(PLAYER_IMAGE)
+
+# Game components
+player = Player(PLAYER_IMAGE)
+score = Score()
+boss = Boss()
+enemies = pygame.sprite.Group()
+collectables = pygame.sprite.Group()
 
 # Function to load a random background, ensuring no repeats until all images are used
 def load_random_background(is_dungeon=False):
@@ -103,7 +119,7 @@ def generate_platforms(num_platforms, exit_rect):
                 x = random.randint(0, SCREEN_WIDTH - width)
                 y = random.randint(50, SCREEN_HEIGHT - height - 50)
 
-            new_platform = Tile(x, y, width, height)
+            new_platform = Platform(x, y, width, height)
 
             # Ensure no overlap with existing platforms and no collision with exit
             if not any(platform.rect.colliderect(new_platform.rect) for platform in platforms) and \
@@ -186,6 +202,7 @@ while True:
                 velocity_y = 0
                 is_jumping = False
                 can_double_jump = False
+                on_platform = True
                 break
 
     if not on_platform and player.rect.bottom < SCREEN_HEIGHT:
@@ -210,11 +227,22 @@ while True:
     if keys[pygame.K_ESCAPE]:
         break
 
+    # Enemy, collectable, and boss updates
+    enemies.update()
+    collectables.update()
+    if boss.active:
+        boss.update()
+
     # Drawing
     screen.blit(background_image, (0, 0))
     platforms.draw(screen)
+    enemies.draw(screen)
+    collectables.draw(screen)
+    if boss.active:
+        screen.blit(boss.image, boss.rect)
     pygame.draw.rect(screen, (255, 0, 0), exit_rect)
     screen.blit(player.image, player.rect)
+    score.draw(screen)
 
     pygame.display.flip()
     clock.tick(60)
