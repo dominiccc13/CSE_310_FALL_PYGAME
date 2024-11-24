@@ -1,16 +1,33 @@
+#-------------------------------------------------------------------------------------------------------------------
+# Import Libraries
+#-------------------------------------------------------------------------------------------------------------------
+
 import pygame
 import sys
 import random
 import math
+
+#-------------------------------------------------------------------------------------------------------------------
+# Import classes
+#-------------------------------------------------------------------------------------------------------------------
+
 from player import Player
 from enemy import Enemy
 from platform import Platform
 from gate import Gate
 
-# from db import create_save
-# from db import load_player_save
-# from db import load_enemies_save
-# from db import load_platforms_save
+#-------------------------------------------------------------------------------------------------------------------
+# Import Save functions
+#-------------------------------------------------------------------------------------------------------------------
+
+from db import create_save
+from db import load_player_save
+from db import load_enemies_save
+from db import load_platforms_save
+
+#-------------------------------------------------------------------------------------------------------------------
+# Pygame initialization
+#-------------------------------------------------------------------------------------------------------------------
 
 pygame.init()
 
@@ -20,7 +37,10 @@ except pygame.error as e:
     print(f"Error initializing Pygame mixer: {e}")
     sys.exit(1)
 
+#-------------------------------------------------------------------------------------------------------------------
 # Constants
+#-------------------------------------------------------------------------------------------------------------------
+
 NORMAL_BACKGROUND_IMAGES = [
     'Product_Library/Source_Code/art/background_1.png',
     'Product_Library/Source_Code/art/background_2.png',
@@ -45,9 +65,12 @@ PLAYER_IMAGE = 'Product_Library/Source_Code/art/player.png'
 SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 600
 
 # Fonts
-font = pygame.font.Font(None, 50)
+FONT = pygame.font.Font(None, 60)
 
+#-------------------------------------------------------------------------------------------------------------------
 # Menu options
+#-------------------------------------------------------------------------------------------------------------------
+
 options = ["New Game", "Load Game", "Exit"]
 buttons = []
 
@@ -64,7 +87,7 @@ def draw_menu():
         # Draw button
         pygame.draw.rect(screen, (50, 50, 50), button)
         # Render text
-        text_surface = font.render(text, True, (0, 0, 0))
+        text_surface = FONT.render(text, True, (0, 0, 0))
         text_rect = text_surface.get_rect(center=button.center)
         screen.blit(text_surface, text_rect)
 
@@ -158,8 +181,8 @@ def level_transition(level):
     for alpha in range(0, 255, 5):
         fade_surface.set_alpha(alpha)
         screen.blit(fade_surface, (0, 0))
-        font = pygame.font.Font(None, 60)
-        text = font.render(f"Level {level}", True, (255, 255, 255))
+        # font = pygame.font.Font(None, 60)
+        text = FONT.render(f"Level {level}", True, (255, 255, 255))
         text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         screen.blit(text, text_rect)
         pygame.display.flip()
@@ -171,21 +194,6 @@ def run():
     num_platforms = random.randint(10, 15)
     platforms = generate_platforms(num_platforms, pygame.Rect(0, 0, 50, 50))
     exit_rect = generate_exit(platforms)
-    # Level settings
-    level_count = 1
-    used_backgrounds = []
-
-
-    # Player movement settings
-    move_speed = 5
-    jump_height = 20
-    half_jump_height = 12
-    gravity = 1
-    velocity_y = 0
-    is_jumping = False
-    jumps_left = 2
-    can_double_jump = False
-
 
     # Initial player position on a random platform that is not the same as the exit platform
     platforms_list = list(platforms)
@@ -206,21 +214,19 @@ def run():
 
         # Movement
         if keys[pygame.K_a] and player.rect.left > 0:
-            player.flip_False()
-            player.update_frame()
             player.rect.x -= move_speed
         if keys[pygame.K_d] and player.rect.right < SCREEN_WIDTH:
-            player.flip_True()
-            player.update_frame()
             player.rect.x += move_speed
 
-         # Jumping logic with double jump
+        # Jumping logic
         if keys[pygame.K_SPACE]:
-            if jumps_left > 0 and not is_jumping:
-                velocity_y = -half_jump_height if jumps_left == 2 else -half_jump_height
-                jumps_left -= 1
+            if not is_jumping:
+                velocity_y = -jump_height
                 is_jumping = True
-
+                can_double_jump = True
+            elif can_double_jump:
+                velocity_y = -half_jump_height
+                can_double_jump = False
 
         # Apply gravity
         player.rect.y += velocity_y
@@ -237,7 +243,7 @@ def run():
                     player.rect.bottom = platform.rect.top
                     velocity_y = 0
                     is_jumping = False
-                    jumps_left = 2
+                    can_double_jump = False
                     break
 
         if not on_platform and player.rect.bottom < SCREEN_HEIGHT:
