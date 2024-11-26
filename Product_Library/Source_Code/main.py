@@ -92,16 +92,6 @@ def handle_click(pos):
                 sys.exit()
 
 
-# Player movement settings
-move_speed = 4
-jump_height = 20
-half_jump_height = 10
-gravity = 0.5
-velocity_y = 0
-is_jumping = False
-jump_count = 0
-can_double_jump = False
-
 # Level settings
 level_count = 1
 used_backgrounds = []
@@ -109,9 +99,6 @@ used_backgrounds = []
 # Screen setup
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
-
-# Load player
-player = Player(10)
 
 # Function to load a random background, ensuring no repeats until all images are used
 def load_random_background(is_dungeon=False):
@@ -176,13 +163,11 @@ def run():
     num_platforms = random.randint(10, 15)
     platforms = generate_platforms(num_platforms, pygame.Rect(0, 0, 50, 50))
     exit_rect = generate_exit(platforms)
+    player = Player(10)
+
     # Level settings
     level_count = 1
     used_backgrounds = []
-
-
-    # Player movement settings
-
 
     # Initial player position on a random platform that is not the same as the exit platform
     platforms_list = list(platforms)
@@ -198,48 +183,9 @@ def run():
         # Frame rate control
         clock.tick(60)  # Limit to 60 frames per second
 
-        player.update_entity()
         # Player input handling
         keys = pygame.key.get_pressed() #! Move player movement logic to Player class
-
-        # Movement
-        if keys[pygame.K_a] and player.rect.left > 0:
-            player.flip_False()
-            player.update_frame()
-            player.rect.x -= move_speed
-        if keys[pygame.K_d] and player.rect.right < SCREEN_WIDTH:
-            player.flip_True()
-            player.update_frame()
-            player.rect.x += move_speed
-
-         # Jumping logic with double jump
-        if keys[pygame.K_SPACE]:
-            if jumps_left > 0 and not is_jumping:
-                player.velocity_y = -half_jump_height if jumps_left == 2 else -half_jump_height
-                jumps_left -= 1
-                is_jumping = True
-
-
-        # Apply gravity
-        player.rect.y += player.velocity_y
-        if player.velocity_y < 0:
-            is_jumping = True
-        elif player.velocity_y > 0:
-            is_jumping = False
-
-        # Collision detection
-        on_platform = False
-        for platform in platforms:
-            if player.rect.colliderect(platform.rect):
-                if player.velocity_y > 0:
-                    player.rect.bottom = platform.rect.top
-                    player.velocity_y = 0
-                    is_jumping = False
-                    jumps_left = 2
-                    break
-
-        if not on_platform and player.rect.bottom < SCREEN_HEIGHT:
-            player.velocity_y += gravity
+        player.update_entity(keys, platforms, exit_rect, level_count)
 
         # Level transition on exit collision
         if player.rect.colliderect(exit_rect):
@@ -255,19 +201,6 @@ def run():
             available_platforms = [platform for platform in platforms if platform != exit_platform]
             random_platform = random.choice(available_platforms) if available_platforms else random.choice(list(platforms))
             player.rect.midbottom = (random_platform.rect.centerx, random_platform.rect.top)
-
-        # Exit on escape
-            # Check if the player has fallen past the bottom of the screen
-        if player.rect.top >= SCREEN_HEIGHT:
-            # Convert platforms group to a list and respawn player on a new platform
-            platforms_list = list(platforms)
-            random_platform = random.choice(platforms_list) if platforms_list else None  # Check if there are platforms
-            if random_platform:
-                # Respawn the player on the selected platform
-                player.rect.midbottom = (random_platform.rect.centerx, random_platform.rect.top)
-                # Reset vertical velocity to prevent immediate falling
-                player.velocity_y = 0
-                is_jumping = False
 
         # Exit condition
         if keys[pygame.K_ESCAPE]:

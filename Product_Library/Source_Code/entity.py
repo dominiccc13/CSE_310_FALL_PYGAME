@@ -45,7 +45,7 @@ class Entity(pygame.sprite.Sprite):
             self.frame_counter = (self.frame_counter + 1) % 2
 
     def update_entity(self):
-        raise NotImplementedError("Subclass must implement this method.")
+        raise NotImplementedError("Subclass must implement 'update_entity' method.")
     
     def move():
-        raise NotImplementedError("Subclass must implement this method.")
+        raise NotImplementedError("Subclass must implement 'move' method.")
