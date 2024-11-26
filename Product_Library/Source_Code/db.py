@@ -2,7 +2,7 @@ import sqlite3
 import pygame
 from player import Player
 from enemy import Enemy
-from platform import Platform
+from platform_module import Platform
  
 CONNECTION = sqlite3.connect('save_file.db')
 
@@ -44,7 +44,7 @@ def load_player_save() -> Player:
     """Returns a Player object with attributes from 
     the save file."""
 
-    CURSOR.execute('SELECT * FROM player')
+    CURSOR.execute('IF TABLE player EXISTS SELECT * FROM player')
     player_numbers = CURSOR.fetchall()
 
     return Player(player_numbers[0][1], player_numbers[0][2])
@@ -100,3 +100,7 @@ def delete_save():
         print("Save file deleted successfully.")
     except sqlite3.Error as e:
         print(f"An error occurred while deleting the save file: {e}")
+
+
+print(load_player_save)
+print(load_enemies_save)

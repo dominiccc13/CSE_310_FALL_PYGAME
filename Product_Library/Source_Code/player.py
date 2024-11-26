@@ -1,50 +1,79 @@
 import pygame
-from random import Random
+from entity import Entity
+from platform_module import Platform
+from typing import List
+# from main import SCREEN_WIDTH
+SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 600
 
-class Player(pygame.sprite.Sprite):
+class Player(Entity):
     def __init__(self, health: int):
-        super().__init__()
+        # Initialize the parent class
+        super().__init__(health)
+        
+        # Load player sprite
         self.image = pygame.image.load("Product_Library/Source_Code/art/player_frame1_True.png")
         self.rect = self.image.get_rect()
         self.rect.topleft = (500, 500)
-        self.health = health
-        self.level = int
-        self.direction = True
+
+        self.half_jump_height = 12
+        self.is_jumping = False
+        self.jumps_left = 2
+
+        # Initialize player-specific attributes
+        self.level = 1  # Start the player at level 1
         self.animation_True = [
-            # Sprite frames facing right.
             "Product_Library/Source_Code/art/player_frame1_True.png",
             "Product_Library/Source_Code/art/player_frame2_True.png"
         ]
         self.animation_False = [
-            # Sprite frames facing left.
             "Product_Library/Source_Code/art/player_frame1_False.png",
             "Product_Library/Source_Code/art/player_frame2_False.png"
         ]
-        self.current_frame = 0
-        self.frame_counter = 0
-        self.last_update_time = pygame.time.get_ticks()
-        self.frame_interval = 500  # Milliseconds for switching frames
 
-    def update_frame(self):
-        """Ensures the frame change is managed consistently, whether the player is facing True or False."""
-        current_time = pygame.time.get_ticks()
-        if current_time - self.last_update_time > self.frame_interval:
-            self.last_update_time = current_time
-            self.frame_counter = (self.frame_counter + 1) % 2
+    def update_entity(self):
+        #! Below is the current error message when this function is implemented
+        # """Traceback (most recent call last):
+        # File "c:\Users\Grant Jones\Desktop\Fall2024\CSE_310\Team_Project\CSE_310_FALL_PYGAME\Product_Library\Source_Code\main.py", line 5, in <module>
+        #     from player import Player
+        # File "c:\Users\Grant Jones\Desktop\Fall2024\CSE_310\Team_Project\CSE_310_FALL_PYGAME\Product_Library\Source_Code\player.py", line 3, in <module>
+        #     from main import SCREEN_WIDTH
+        # File "c:\Users\Grant Jones\Desktop\Fall2024\CSE_310\Team_Project\CSE_310_FALL_PYGAME\Product_Library\Source_Code\main.py", line 5, in <module>
+        #     from player import Player
+        # ImportError: cannot import name 'Player' from partially initialized module 'player' (most likely due to a circular import) (c:\Users\Grant Jones\Desktop\Fall2024\CSE_310\Team_Project\CSE_310_FALL_PYGAME\Product_Library\Source_Code\player.py)
+        # """
+                # Player input handling
+        keys = pygame.key.get_pressed()
 
-    def flip_True(self):
-        """Faces the player sprite to the right."""
+        # Movement
+        if keys[pygame.K_a] and self.rect.left > 0:
+            self.flip_False()
+            self.update_frame()
+            self.rect.x -= self.move_speed
+        if keys[pygame.K_d] and self.rect.right < SCREEN_WIDTH:
+            self.flip_True()
+            self.update_frame()
+            self.rect.x += self.move_speed
 
-        if not self.direction:
-            self.frame_counter = 0  # Reset frame counter when switching direction
-        self.direction = True
-        self.update_frame()
-        self.image = pygame.image.load(self.animation_True[self.frame_counter])
+        #  # Jumping logic with double jump
+        # if keys[pygame.K_SPACE]:
+        #     if self.jumps_left > 0 and not self.is_jumping:
+        #         self.velocity_y = -self.half_jump_height if self.jumps_left == 2 else -self.half_jump_height
+        #         self.jumps_left -= 1
+        #         self.is_jumping = True
 
-    def flip_False(self):
-        """Faces the player sprite to the left."""
-        if self.direction:
-            self.frame_counter = 0  # Reset frame counter when switching direction
-        self.direction = False
-        self.update_frame()
-        self.image = pygame.image.load(self.animation_False[self.frame_counter])
+        # # Apply gravity
+        # self.rect.y += self.velocity_y
+        # if self.velocity_y < 0:
+        #     self.is_jumping = True
+        # elif self.velocity_y > 0:
+        #     self.is_jumping = False
+
+        # if self.rect.colliderect(Platform):
+        #     if self.velocity_y > 0:
+        #         self.rect.bottom = Platform.rect.top
+        #         self.velocity_y = 0
+        #         self.is_jumping = False
+        #         self.jumps_left = 2
+                
+
+            

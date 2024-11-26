@@ -13,7 +13,7 @@ import math
 
 from player import Player
 from enemy import Enemy
-from platform import Platform
+from platform_module import Platform
 from gate import Gate
 
 #-------------------------------------------------------------------------------------------------------------------

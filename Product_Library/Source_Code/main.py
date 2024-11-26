@@ -4,7 +4,7 @@ import random
 import math
 from player import Player
 from enemy import Enemy
-from platform import Platform
+from platform_module import Platform
 from gate import Gate
 
 # from db import create_save
@@ -41,7 +41,6 @@ DUNGEON_BACKGROUND_IMAGES = [
     'Product_Library/Source_Code/art/dungeon_background_5.png'
 ]
 
-PLAYER_IMAGE = 'Product_Library/Source_Code/art/player.png'
 SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 600
 
 # Fonts
@@ -59,10 +58,14 @@ for i, option in enumerate(options):
 
 def draw_menu():
     """Draw the menu options."""
-    screen.fill((100, 100, 100))
+    # Load and scale the background image
+    original_image = pygame.image.load('Product_Library/Source_Code/art/dungeon_wall.png')
+    scaled_image = pygame.transform.scale(original_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    # Draw the background image
+    screen.blit(scaled_image, (0, 0))    
     for button, text in buttons:
         # Draw button
-        pygame.draw.rect(screen, (50, 50, 50), button)
+        pygame.draw.rect(screen, (210, 180, 140), button)
         # Render text
         text_surface = font.render(text, True, (0, 0, 0))
         text_rect = text_surface.get_rect(center=button.center)
@@ -80,7 +83,9 @@ def handle_click(pos):
             elif text == "Load Game":
                 print("Load Game selected!")
                 # Add your logic for loading a game here
-                run()
+                
+
+                run() #! Stubbed, nneds data query added
             elif text == "Exit":
                 print("Exiting game...")
                 pygame.quit()
@@ -106,7 +111,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 
 # Load player
-player = Player(PLAYER_IMAGE)
+player = Player(10)
 
 # Function to load a random background, ensuring no repeats until all images are used
 def load_random_background(is_dungeon=False):
@@ -177,14 +182,6 @@ def run():
 
 
     # Player movement settings
-    move_speed = 5
-    jump_height = 20
-    half_jump_height = 12
-    gravity = 1
-    velocity_y = 0
-    is_jumping = False
-    jumps_left = 2
-    can_double_jump = False
 
 
     # Initial player position on a random platform that is not the same as the exit platform
@@ -201,8 +198,9 @@ def run():
         # Frame rate control
         clock.tick(60)  # Limit to 60 frames per second
 
+        player.update_entity()
         # Player input handling
-        keys = pygame.key.get_pressed()
+        keys = pygame.key.get_pressed() #! Move player movement logic to Player class
 
         # Movement
         if keys[pygame.K_a] and player.rect.left > 0:
@@ -217,31 +215,31 @@ def run():
          # Jumping logic with double jump
         if keys[pygame.K_SPACE]:
             if jumps_left > 0 and not is_jumping:
-                velocity_y = -half_jump_height if jumps_left == 2 else -half_jump_height
+                player.velocity_y = -half_jump_height if jumps_left == 2 else -half_jump_height
                 jumps_left -= 1
                 is_jumping = True
 
 
         # Apply gravity
-        player.rect.y += velocity_y
-        if velocity_y < 0:
+        player.rect.y += player.velocity_y
+        if player.velocity_y < 0:
             is_jumping = True
-        elif velocity_y > 0:
+        elif player.velocity_y > 0:
             is_jumping = False
 
         # Collision detection
         on_platform = False
         for platform in platforms:
             if player.rect.colliderect(platform.rect):
-                if velocity_y > 0:
+                if player.velocity_y > 0:
                     player.rect.bottom = platform.rect.top
-                    velocity_y = 0
+                    player.velocity_y = 0
                     is_jumping = False
                     jumps_left = 2
                     break
 
         if not on_platform and player.rect.bottom < SCREEN_HEIGHT:
-            velocity_y += gravity
+            player.velocity_y += gravity
 
         # Level transition on exit collision
         if player.rect.colliderect(exit_rect):
@@ -268,7 +266,7 @@ def run():
                 # Respawn the player on the selected platform
                 player.rect.midbottom = (random_platform.rect.centerx, random_platform.rect.top)
                 # Reset vertical velocity to prevent immediate falling
-                velocity_y = 0
+                player.velocity_y = 0
                 is_jumping = False
 
         # Exit condition
